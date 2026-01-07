@@ -1,15 +1,17 @@
 # Init-srv
 version : 0.1
+scope : RHEL
 
 Set of scripts to get a new server setup with essential components installed and configuration applied
 
 Full install:
 
-add necessary repos if needed (example below is for EPEL/rhel10)
+add necessary repos if needed (example below is for EPEL)
 ```
  sudo subscription-manager repos --enable codeready-builder-for-rhel-10-$(arch)-rpms
  sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm -y
 ```
+
 run script
 ```
 ./main-init.sh
