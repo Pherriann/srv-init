@@ -8,6 +8,6 @@ if [[ -f $cwd/packages.lst ]]; then
   done  
 else
   echo "File $cwd/packages.lst missing"
-  return !
+  return 1
 fi
 
