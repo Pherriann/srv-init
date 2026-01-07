@@ -1,2 +1,13 @@
 #!/bin/bash
-sudo yum install ansible
+
+cwd=$(dirname $0)
+
+if [[ -f $cwd/packages.lst ]]; then
+  for i in $( cat $cwd/packages.lst); do
+    sudo yum install $i
+  done  
+else
+  echo "File $cwd/packages.lst missing"
+  return !
+fi
+
