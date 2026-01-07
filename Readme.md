@@ -1,4 +1,4 @@
-** Init process to get a new server setup with essential conmponents**
+** Init process to get a new server setup with essential conmponents **
 
 Full install:
 ```
