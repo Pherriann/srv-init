@@ -4,7 +4,8 @@ version : 0.1
 Set of scripts to get a new server setup with essential components installed and configuration applied
 
 Full install:
-add EPEL repo
+
+add necessary repos if needed (example below is for EPEL/rhel10)
 ```
  sudo subscription-manager repos --enable codeready-builder-for-rhel-10-$(arch)-rpms
  sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
