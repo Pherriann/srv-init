@@ -1,4 +1,6 @@
 # Init-srv
+version : 0.1
+
 Set of scripts to get a new server setup with essential components installed and configuration applied
 
 Full install:
