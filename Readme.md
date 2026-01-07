@@ -4,8 +4,13 @@ version : 0.1
 Set of scripts to get a new server setup with essential components installed and configuration applied
 
 Full install:
+add EPEL repo
 ```
-./main-init.sh
+ subscription-manager repos --enable codeready-builder-for-rhel-10-$(arch)-rpms
+ dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
+```
+run script
+```./main-init.sh
 ```
 
 Main-init details:
