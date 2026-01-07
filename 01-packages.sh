@@ -1,13 +1,13 @@
 #!/bin/bash
 
-cwd=$(dirname $0)
+wdir=$(dirname $0)
 
-if [[ -f $cwd/packages.lst ]]; then
-  for i in $( cat $cwd/packages.lst); do
+if [[ -f $wdir/packages.lst ]]; then
+  for i in $( cat $wdir/packages.lst); do
     sudo dnf install $i -y
   done  
 else
-  echo "File $cwd/packages.lst missing"
+  echo "File $wdir/packages.lst missing"
   return 1
 fi
 
