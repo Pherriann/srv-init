@@ -21,3 +21,17 @@ pipx install --include-deps ansible
 # ansible autocompletion in Bash
 sudo pip3 install argcomplete
 sudo activate-global-python-argcomplete
+
+# Must be last
+# ssh key operations to use fot Git
+user=$(whoami)
+nb=$(ls -l /home/$user/.ssh/*.pub)
+
+if nb -eq 0; then
+  echo "No ssh public key found. Generating one"
+  ssh-keygen -t ed25519 -C "pherriann@gmail.com"
+  ssh-add /home/$user/.ssh/id_ed25519
+  echo "Key generated"
+  cat home/$user/.ssh/id_ed25519
+  echo "Add it to you github account"
+  echo "And run 'ssh -T git@github.com -y' to test the connection"
