@@ -1,5 +1,5 @@
 # Init-srv
-version : 0.1
+version : 0.11
 scope : RHEL
 
 Set of scripts to get a new server setup with essential components installed and configuration applied
