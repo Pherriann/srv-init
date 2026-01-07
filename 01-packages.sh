@@ -14,3 +14,10 @@ fi
 # pipx config
 pipx ensurepath
 sudo pipx ensurepath
+
+# ansible install
+pipx install --include-deps ansible
+
+# ansible autocompletion in Bash
+sudo pip3 install argcomplete
+sudo activate-global-python-argcomplete
