@@ -11,3 +11,6 @@ else
   return 1
 fi
 
+# pipx config
+pipx ensurepath
+sudo pipx ensurepath
