@@ -22,8 +22,11 @@ pipx install --include-deps ansible
 sudo pip3 install argcomplete
 sudo activate-global-python-argcomplete
 
+#################################################
 # Must be last
-# ssh key operations to use fot Git
+#################################################
+
+# ssh key generation (if no key are present) to use for Git
 user=$(whoami)
 nb=$(ls -l /home/$user/.ssh/*.pub)
 

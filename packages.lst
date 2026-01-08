@@ -5,3 +5,4 @@ ansible-core
 podman
 podman-compose
 podman-docker
+htop
