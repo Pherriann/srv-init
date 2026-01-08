@@ -1,7 +1,5 @@
 git
 python3-pip
-pipx
-ansible-core
 podman
 podman-compose
 podman-docker

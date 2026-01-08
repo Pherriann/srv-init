@@ -11,16 +11,9 @@ else
   return 1
 fi
 
-# pipx config
-pipx ensurepath
-sudo pipx ensurepath
-
-# ansible install
-pipx install --include-deps ansible
-
 # ansible autocompletion in Bash
-sudo pip3 install argcomplete
-sudo activate-global-python-argcomplete
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+
 
 #################################################
 # Must be last
