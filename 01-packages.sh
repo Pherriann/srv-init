@@ -10,10 +10,19 @@ else
   echo "File $wdir/packages.lst missing"
   return 1
 fi
+# pipx config
+pipx ensurepath
+sudo pipx ensurepath
+
+# ansible install
+pipx install --include-deps ansible
 
 # ansible autocompletion in Bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+sudo pip3 install argcomplete
+sudo activate-global-python-argcomplete
 
+# OhMyBash install
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
 #################################################
 # Must be last
