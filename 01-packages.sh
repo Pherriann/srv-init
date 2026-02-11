@@ -22,13 +22,19 @@ sudo pip3 install argcomplete
 sudo activate-global-python-argcomplete
 
 # OhMyBash install
+echo "   OhMyBash"
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+
+# shai install
+echo "   Shai"
+curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh
 
 #################################################
 # Must be last
 #################################################
 
 # ssh key generation (if no key are present) to use for Git
+echo "   Key management for Git"
 user=$(whoami)
 nb=$(ls -l /home/$user/.ssh/*.pub)
 
@@ -37,6 +43,6 @@ if nb -eq 0; then
   ssh-keygen -t ed25519 -C "pherriann@gmail.com"
   ssh-add /home/$user/.ssh/id_ed25519
   echo "Key generated"
-  cat home/$user/.ssh/id_ed25519
+  cat /home/$user/.ssh/id_ed25519.pub
   echo "Add it to you github account"
   echo "And run 'ssh -T git@github.com -y' to test the connection"
