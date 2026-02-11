@@ -19,6 +19,9 @@ run script
 
 Main-init details:
 ```
-01-packages.sh  : install necessary packages, see packages.lst for complete list ...
-02-
+01-packages.sh  : install necessary packages, see packages.lst for complete list of rpm installed...
+                  install OhMyBash, Shai, Tailscale
+                  Generate ssh key for Git and give info to configure access to your repo
+
+02-pod.sh       : install various pod
 ```

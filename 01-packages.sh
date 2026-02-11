@@ -25,9 +25,13 @@ sudo activate-global-python-argcomplete
 echo "   OhMyBash"
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
-# shai install
+# SHai install
 echo "   Shai"
 curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh
+
+# Tailscale install
+curl -fsSL https://tailscale.com/install.sh | sh
+echo "   Log in to start using Tailscale by running: sudo tailscale up" 
 
 #################################################
 # Must be last
