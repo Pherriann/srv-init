@@ -45,4 +45,8 @@ if nb -eq 0; then
   echo "Key generated"
   cat /home/$user/.ssh/id_ed25519.pub
   echo "Add it to you github account"
-  echo "And run 'ssh -T git@github.com -y' to test the connection"
+  echo "Run 'ssh -T git@github.com -y' to test the connection"
+  echo "Change URL of depot from https to git"
+  echo "  git remote -v"
+  echo "  git remote set-url origin git@github.com:utilisateur/depot.git"
+
