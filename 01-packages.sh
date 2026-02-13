@@ -23,7 +23,7 @@ sudo activate-global-python-argcomplete
 
 # OhMyBash install
 echo "   OhMyBash"
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh
 
 # SHai install
 echo "   Shai"
@@ -40,17 +40,17 @@ echo "   Log in to start using Tailscale by running: sudo tailscale up"
 # ssh key generation (if no key are present) to use for Git
 echo "   Key management for Git"
 user=$(whoami)
-nb=$(ls -l /home/$user/.ssh/*.pub)
 
-if nb -eq 0; then
-  echo "No ssh public key found. Generating one"
-  ssh-keygen -t ed25519 -C "pherriann@gmail.com"
-  ssh-add /home/$user/.ssh/id_ed25519
-  echo "Key generated"
-  cat /home/$user/.ssh/id_ed25519.pub
-  echo "Add it to you github account"
-  echo "Run 'ssh -T git@github.com -y' to test the connection"
-  echo "Change URL of depot from https to git"
-  echo "  git remote -v"
-  echo "  git remote set-url origin git@github.com:utilisateur/depot.git"
-
+if [ ! -d "home/$user/.ssh" ]; then
+  mkdir /home/$user/.ssh
+fi
+echo "Generating ssh key for github"
+ssh-keygen -t ed25519 -C "pherriann@gmail.com"
+ssh-add /home/$user/.ssh/id_ed25519
+echo "Key generated"
+cat /home/$user/.ssh/id_ed25519.pub
+echo "Add it to you github account"
+echo "Run 'ssh -T git@github.com -y' to test the connection"
+echo "Change URL of depot from https to git"
+echo "  git remote -v"
+echo "  git remote set-url origin git@github.com:utilisateur/depot.git"
