@@ -6,3 +6,7 @@ podman
 podman-compose
 podman-docker
 htop
+btop
+gdu
+bat
+fd-find
