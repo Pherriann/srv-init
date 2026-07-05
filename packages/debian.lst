@@ -1,0 +1,15 @@
+git
+curl
+ca-certificates
+openssh-client
+python3-pip
+python3-venv
+pipx
+podman
+podman-compose
+podman-docker
+htop
+btop
+gdu
+bat
+fd-find

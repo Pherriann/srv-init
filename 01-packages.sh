@@ -1,82 +1,184 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-wdir=$(dirname "$0")
-os_type="UNKNOWN"
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-# Load OS type from parent script
-source $wdir/../main-init.sh || { echo "Error: Failed to load os_type from main-init.sh" >&2; exit 1; }
+# shellcheck source=lib/os.sh
+source "$script_dir/lib/os.sh"
 
-# Check if packages.lst exists
-if [[ ! -f "$wdir/packages.lst" ]]; then
-echo "Error: $wdir/packages.lst missing" >&2
-return 1
-fi
+DRY_RUN=0
 
-# Install packages based on OS type
-case "$os_type" in
-    "UBUNTU")
-        # Ubuntu/Debian package manager (apt)
-        for pkg in $(cat "$wdir/packages.lst"); do
-            if ! sudo apt-get update && sudo apt-get install -y "$pkg"; then
-echo "Error: Failed to install $pkg on Ubuntu" >&2
-return 1
-fi
-done
-    ;;
-    
-    "RHEL")
-        # RHEL/CentOS package manager (dnf)
-        for pkg in $(cat "$wdir/packages.lst"); do
-            if ! sudo dnf install -y "$pkg"; then
-echo "Error: Failed to install $pkg on RHEL" >&2
-return 1
-fi
-done
-    ;;
-    
+usage() {
+  cat <<'USAGE'
+Usage: ./01-packages.sh [--dry-run] [--print-packages UBUNTU|RHEL]
+
+Installs the OS-specific package list for the detected OS family.
+Use OS_TYPE=UBUNTU|RHEL to bypass detection, or OS_RELEASE_FILE=/path/to/os-release for tests.
+USAGE
+}
+
+package_list_for_os() {
+  case "$1" in
+    UBUNTU) echo "$script_dir/packages/debian.lst" ;;
+    RHEL) echo "$script_dir/packages/redhat.lst" ;;
     *)
-        echo "Warning: Unsupported OS type: $os_type. Using dnf as fallback." >&2
-        for pkg in $(cat "$wdir/packages.lst"); do
-            if ! sudo dnf install -y "$pkg"; then
-echo "Error: Failed to install $pkg (fallback failed)" >&2
-return 1
+      echo "Error: unsupported OS type: $1" >&2
+      return 1
+      ;;
+  esac
+}
+
+print_packages_for_os() {
+  local os_type="$1"
+  local package_file
+
+  package_file=$(package_list_for_os "$os_type") || return 1
+  if [[ ! -f "$package_file" ]]; then
+    echo "Error: package list missing: $package_file" >&2
+    return 1
+  fi
+
+  grep -Ev '^\s*(#|$)' "$package_file"
+}
+
+run_cmd() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf '+ '
+    printf '%q ' "$@"
+    printf '\n'
+    return 0
+  fi
+
+  "$@"
+}
+
+run_privileged() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd "$@"
+    return 0
+  fi
+
+  sudo "$@"
+}
+
+install_system_packages() {
+  local os_type="$1"
+  local packages=()
+
+  mapfile -t packages < <(print_packages_for_os "$os_type")
+  if [[ "${#packages[@]}" -eq 0 ]]; then
+    echo "Error: no packages configured for $os_type" >&2
+    return 1
+  fi
+
+  case "$os_type" in
+    UBUNTU)
+      run_privileged apt-get update
+      run_privileged apt-get install -y "${packages[@]}"
+      ;;
+    RHEL)
+      run_privileged dnf install -y "${packages[@]}"
+      ;;
+    *)
+      echo "Error: unsupported OS type: $os_type" >&2
+      return 1
+      ;;
+  esac
+}
+
+install_post_packages() {
+  run_cmd pipx ensurepath
+  run_privileged pipx ensurepath || echo "Warning: sudo pipx ensurepath ignored." >&2
+  run_cmd pipx install --include-deps ansible
+
+  echo "   Key management for Git"
+  local current_user github_email ssh_dir
+  current_user=$(whoami)
+  ssh_dir="/home/$current_user/.ssh"
+  run_cmd mkdir -p "$ssh_dir"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd ssh-keygen -t ed25519 -C "user@example.com"
+    run_cmd ssh-add "$ssh_dir/id_ed25519"
+  else
+    read -rp 'Enter GitHub email: ' github_email
+    ssh-keygen -t ed25519 -C "$github_email"
+    ssh-add "$ssh_dir/id_ed25519" || echo "Warning: Failed to add SSH key." >&2
+    cat "$ssh_dir/id_ed25519.pub"
+  fi
+
+  echo "Add it to your GitHub account."
+  echo "Run 'ssh -T git@github.com -y' to test the connection."
+
+  echo "   OhMyBash"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh
+  else
+    curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh | bash || echo "Warning: Failed to install OhMyBash." >&2
+  fi
+
+  echo "   Shai"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh
+  else
+    curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh || echo "Warning: Failed to install SHai." >&2
+  fi
+
+  echo "   Tailscale"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd curl -fsSL https://tailscale.com/install.sh
+  else
+    curl -fsSL https://tailscale.com/install.sh | sh
+  fi
+  echo "   Log in to start using Tailscale by running: sudo tailscale up"
+}
+
+main() {
+  local print_packages_os=""
+  local os_type="${OS_TYPE:-}"
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --dry-run)
+        DRY_RUN=1
+        shift
+        ;;
+      --print-packages)
+        print_packages_os="${2:-}"
+        if [[ -z "$print_packages_os" ]]; then
+          usage >&2
+          return 1
+        fi
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        echo "Error: unknown argument: $1" >&2
+        usage >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [[ -n "$print_packages_os" ]]; then
+    print_packages_for_os "$print_packages_os"
+    return $?
+  fi
+
+  if [[ -z "$os_type" ]]; then
+    os_type=$(detect_os_type "${OS_RELEASE_FILE:-/etc/os-release}") || {
+      echo "Error: unsupported OS in ${OS_RELEASE_FILE:-/etc/os-release}" >&2
+      return 1
+    }
+  fi
+
+  install_system_packages "$os_type"
+  install_post_packages
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
 fi
-done
-    ;;
-esac
-
-# Pipx/Python setup with error checks
-if ! pipx ensurepath; then
-echo "Error: pipx ensurepath failed" >&2
-exit 1
-fi
-sudo pipx ensurepath || { echo "Warning: sudo pipx ensurepath ignored." >&2; }
-
-# Ansible install
-pipx install --include-deps ansible || { echo "Error: Failed to install ansible via pipx." >&2; exit 1; }
-
-# SSH Key Setup (with user input)
-echo "   Key management for Git"
-user=$(whoami)
-mkdir -p "/home/$user/.ssh"
-if ! ssh-keygen -t ed25519 -C "$(read -rp 'Enter GitHub email: ') "; then
-echo "Error: SSH key generation failed." >&2
-exit 1
-fi
-ssh-add "/home/$user/.ssh/id_ed25519" || { echo "Warning: Failed to add SSH key." >&2; }
-cat "/home/$user/.ssh/id_ed25519.pub"
-echo "Add it to your GitHub account."
-echo "Run 'ssh -T git@github.com -y' to test the connection."
-
-# OhMyBash install
-echo "   OhMyBash"
-curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh | bash || { echo "Warning: Failed to install OhMyBash." >&2; }
-
-# SHai install
-echo "   Shai"
-curl -fsSL https://raw.githubusercontent.com/ovh/shai/main/install.sh | sh || { echo "Warning: Failed to install SHai." >&2; }
-
-# Tailscale install
-echo "   Tailscale"
-curl -fsSL https://tailscale.com/install.sh | sh
-echo "   Log in to start using Tailscale by running: sudo tailscale up"

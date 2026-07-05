@@ -1,4 +1,7 @@
 git
+curl
+ca-certificates
+openssh-clients
 python3-pip
 pipx
 ansible-core
