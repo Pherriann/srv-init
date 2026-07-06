@@ -1,6 +1,6 @@
 # Init-srv
 version : 0.12
-scope : RHEL + Ubuntu/Debian
+scope : Ubuntu/Debian + RHEL-compatible/Fedora
 
 Set of scripts to get a new server setup with essential components installed and configuration applied
 
@@ -29,6 +29,20 @@ Main-init details:
 
 02-pod.sh       : install various pod
 ```
+
+## Supported distribution matrix
+
+| Distribution | Versions covered by tests | Package list | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Ubuntu LTS | 22.04, 24.04 | `packages/debian.lst` | Supported | Enable standard repositories; minimal installs may need `universe` for packages such as `podman`, `btop`, `gdu`, `bat`, and `fd-find`. |
+| Debian stable | 12 bookworm | `packages/debian.lst` | Supported | `bat` and `fd-find` may expose `batcat` and `fdfind` binaries. |
+| Rocky Linux | 9 | `packages/redhat.lst` | Supported | EPEL is enabled automatically before installing packages. |
+| AlmaLinux | 9 | `packages/redhat.lst` | Supported | EPEL is enabled automatically before installing packages. |
+| Fedora Server | 42 | `packages/redhat.lst` | Supported | Good modern RPM target; faster-moving than enterprise RHEL-compatible distributions. |
+| CentOS Stream | 9 | `packages/redhat.lst` | Supported | Close to RHEL, but rolling ahead of RHEL; treat as useful for dev/validation. |
+| RHEL official | 9/10 compatible family | `packages/redhat.lst` | Experimental | May require subscription-manager repositories such as CodeReady Builder before EPEL/packages are available. |
+
+Current automated fixtures validate OS-family routing for Ubuntu 22.04/24.04, Debian 12, Rocky 9, AlmaLinux 9, Fedora 42, and CentOS Stream 9.
 
 Package-list notes:
 - `packages/redhat.lst` preserves the original RedHat package set and adds script prerequisites such as `curl`, `ca-certificates`, and `openssh-clients`.

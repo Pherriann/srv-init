@@ -36,9 +36,13 @@ assert_not_contains() {
 
 source "$repo_root/lib/os.sh"
 
-assert_eq "$(detect_os_type "$fixtures/os-release.ubuntu")" "UBUNTU" "ubuntu fixture detection"
-assert_eq "$(detect_os_type "$fixtures/os-release.debian")" "UBUNTU" "debian fixture detection"
-assert_eq "$(detect_os_type "$fixtures/os-release.rhel")" "RHEL" "rhel-like fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.ubuntu-22.04")" "UBUNTU" "ubuntu 22.04 fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.ubuntu-24.04")" "UBUNTU" "ubuntu 24.04 fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.debian-12")" "UBUNTU" "debian 12 fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.rocky-9")" "RHEL" "rocky 9 fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.almalinux-9")" "RHEL" "almalinux 9 fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.fedora-42")" "RHEL" "fedora 42 fixture detection"
+assert_eq "$(detect_os_type "$fixtures/os-release.centos-stream-9")" "RHEL" "centos stream 9 fixture detection"
 if detect_os_type "$fixtures/os-release.unknown" >"$unknown_os_output" 2>/dev/null; then
   fail "unknown fixture should not be supported"
 fi
@@ -62,13 +66,13 @@ assert_not_contains "$rhel_packages" "python3-venv" "rhel packages"
 
 [[ "$ubuntu_packages" != "$rhel_packages" ]] || fail "Ubuntu and RHEL package lists must be distinct"
 
-ubuntu_dry_run=$(OS_RELEASE_FILE="$fixtures/os-release.ubuntu" "$repo_root/01-packages.sh" --dry-run)
+ubuntu_dry_run=$(OS_RELEASE_FILE="$fixtures/os-release.ubuntu-24.04" "$repo_root/01-packages.sh" --dry-run)
 grep -q "apt-get update" <<< "$ubuntu_dry_run" || fail "ubuntu dry-run should update apt"
 grep -q "apt-get install -y" <<< "$ubuntu_dry_run" || fail "ubuntu dry-run should install with apt"
 ! grep -q "dnf install" <<< "$ubuntu_dry_run" || fail "ubuntu dry-run must not call dnf"
 ! grep -q '^+ sudo' <<< "$ubuntu_dry_run" || fail "dry-run should not execute sudo"
 
-rhel_dry_run=$(OS_RELEASE_FILE="$fixtures/os-release.rhel" "$repo_root/01-packages.sh" --dry-run)
+rhel_dry_run=$(OS_RELEASE_FILE="$fixtures/os-release.rocky-9" "$repo_root/01-packages.sh" --dry-run)
 grep -q "dnf install -y epel-release" <<< "$rhel_dry_run" || fail "rhel dry-run should enable EPEL"
 grep -q "dnf makecache" <<< "$rhel_dry_run" || fail "rhel dry-run should refresh dnf metadata after enabling EPEL"
 grep -q "dnf install -y" <<< "$rhel_dry_run" || fail "rhel dry-run should install with dnf"
