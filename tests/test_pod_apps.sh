@@ -24,6 +24,12 @@ assert_contains "$list_output" "http://localhost:5678/" "n8n URL"
 selected_output=$("$repo_root/02-pod.sh" --dry-run --install bentopdf,n8n)
 assert_contains "$selected_output" "podman compose --file $repo_root/bentopdf.yaml up -d" "bentopdf dry-run"
 assert_contains "$selected_output" "podman compose --file $repo_root/n8n.yaml up -d" "n8n dry-run"
+assert_contains "$selected_output" "firewall-cmd --add-port=3250/tcp --permanent" "bentopdf firewalld dry-run"
+assert_contains "$selected_output" "firewall-cmd --add-port=5678/tcp --permanent" "n8n firewalld dry-run"
+assert_contains "$selected_output" "ufw allow 3250/tcp" "bentopdf ufw dry-run"
+assert_contains "$selected_output" "ufw allow 5678/tcp" "n8n ufw dry-run"
+assert_contains "$selected_output" "ss -ltn" "listen check dry-run"
+assert_contains "$selected_output" "LAN URL:" "LAN URL dry-run"
 
 single_output=$(PODMAN_APPS=n8n "$repo_root/02-pod.sh" --dry-run)
 assert_contains "$single_output" "podman compose --file $repo_root/n8n.yaml up -d" "env selected n8n dry-run"

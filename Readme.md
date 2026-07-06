@@ -30,6 +30,7 @@ Main-init details:
 02-pod.sh       : optional Podman app menu. Lets you install predefined compose apps:
                   - bentopdf, exposed at http://localhost:3250/
                   - n8n, exposed at http://localhost:5678/
+                  Opens the selected app ports in firewalld or ufw when active, then verifies with ss that each app listens on the LAN-facing port.
                   Use PODMAN_APPS=bentopdf,n8n or ./02-pod.sh --install bentopdf,n8n for non-interactive installs.
 ```
 
@@ -48,6 +49,6 @@ Main-init details:
 Current automated fixtures validate OS-family routing for Ubuntu 22.04/24.04, Debian 12, Rocky 9, AlmaLinux 9, Fedora 42, and CentOS Stream 9.
 
 Package-list notes:
-- `packages/redhat.lst` preserves the original RedHat package set and adds script prerequisites such as `curl`, `ca-certificates`, and `openssh-clients`.
-- `packages/debian.lst` uses Ubuntu/Debian package names, including `openssh-client` and `python3-venv`; it excludes `fastfetch` and `ansible-core` by default because Ansible is installed via `pipx` later in the script.
+- `packages/redhat.lst` preserves the original RedHat package set and adds script prerequisites such as `curl`, `ca-certificates`, `iproute`, and `openssh-clients`.
+- `packages/debian.lst` uses Ubuntu/Debian package names, including `openssh-client`, `python3-venv`, and `iproute2`; it excludes `fastfetch` and `ansible-core` by default because Ansible is installed via `pipx` later in the script.
 - `bat` and `fd-find` packages may expose `batcat` and `fdfind` binaries on Debian/Ubuntu.

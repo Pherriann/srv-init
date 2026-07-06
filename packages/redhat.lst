@@ -1,6 +1,7 @@
 git
 curl
 ca-certificates
+iproute
 openssh-clients
 python3-pip
 pipx

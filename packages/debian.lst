@@ -1,6 +1,7 @@
 git
 curl
 ca-certificates
+iproute2
 openssh-client
 python3-pip
 python3-venv

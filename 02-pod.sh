@@ -22,6 +22,11 @@ declare -A APP_URLS=(
   [n8n]="http://localhost:5678/"
 )
 
+declare -A APP_PORTS=(
+  [bentopdf]="3250"
+  [n8n]="5678"
+)
+
 usage() {
   cat <<'USAGE'
 Usage: ./02-pod.sh [--dry-run] [--list] [--install APP[,APP...]]
@@ -61,6 +66,79 @@ run_cmd() {
   fi
 
   "$@"
+}
+
+run_privileged() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd sudo "$@"
+    return 0
+  fi
+
+  sudo "$@"
+}
+
+get_lan_ip() {
+  hostname -I 2>/dev/null | awk '{print $1}'
+}
+
+open_firewall_port() {
+  local app="$1"
+  local port="$2"
+
+  echo "Opening firewall port $port/tcp for $app..."
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_privileged firewall-cmd --add-port="$port/tcp" --permanent
+    run_privileged firewall-cmd --reload
+    run_privileged ufw allow "$port/tcp"
+    return 0
+  fi
+
+  if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
+    run_privileged firewall-cmd --add-port="$port/tcp" --permanent
+    run_privileged firewall-cmd --reload
+    return 0
+  fi
+
+  if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -qi '^Status: active'; then
+    run_privileged ufw allow "$port/tcp"
+    return 0
+  fi
+
+  echo "Warning: no active supported firewall detected; port $port/tcp was not opened automatically." >&2
+}
+
+wait_for_listen() {
+  local app="$1"
+  local port="$2"
+  local lan_ip
+  lan_ip=$(get_lan_ip || true)
+
+  echo "Checking that $app listens on the local network port $port..."
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run_cmd ss -ltn
+    echo "LAN URL: http://${lan_ip:-<lan-ip>}:$port/"
+    return 0
+  fi
+
+  local attempt listeners
+  for attempt in $(seq 1 30); do
+    listeners=$(ss -ltn 2>/dev/null | awk -v port=":$port" '$4 ~ port {print $4}')
+    if grep -Eq "(^|[[:space:]])(0\.0\.0\.0|\[::\]|\*|${lan_ip:-__no_lan_ip__}):$port$" <<< "$listeners"; then
+      echo "$app is listening for LAN connections on port $port."
+      if [[ -n "$lan_ip" ]]; then
+        echo "LAN URL: http://$lan_ip:$port/"
+      fi
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "Error: $app is not listening on 0.0.0.0, ::, or LAN IP ${lan_ip:-unknown} port $port." >&2
+  echo "Current listeners for port $port:" >&2
+  ss -ltn | awk -v port=":$port" '$4 ~ port {print}' >&2 || true
+  return 1
 }
 
 app_exists() {
@@ -133,6 +211,8 @@ install_app() {
 
   echo "Installing $app with Podman Compose..."
   run_cmd podman compose --file "$compose_file" up -d
+  open_firewall_port "$app" "${APP_PORTS[$app]}"
+  wait_for_listen "$app" "${APP_PORTS[$app]}"
   echo "$app available at ${APP_URLS[$app]}"
 }
 
