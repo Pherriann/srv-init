@@ -69,6 +69,8 @@ grep -q "apt-get install -y" <<< "$ubuntu_dry_run" || fail "ubuntu dry-run shoul
 ! grep -q '^+ sudo' <<< "$ubuntu_dry_run" || fail "dry-run should not execute sudo"
 
 rhel_dry_run=$(OS_RELEASE_FILE="$fixtures/os-release.rhel" "$repo_root/01-packages.sh" --dry-run)
+grep -q "dnf install -y epel-release" <<< "$rhel_dry_run" || fail "rhel dry-run should enable EPEL"
+grep -q "dnf makecache" <<< "$rhel_dry_run" || fail "rhel dry-run should refresh dnf metadata after enabling EPEL"
 grep -q "dnf install -y" <<< "$rhel_dry_run" || fail "rhel dry-run should install with dnf"
 ! grep -q "apt-get" <<< "$rhel_dry_run" || fail "rhel dry-run must not call apt-get"
 

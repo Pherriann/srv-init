@@ -77,6 +77,8 @@ install_system_packages() {
       run_privileged apt-get install -y "${packages[@]}"
       ;;
     RHEL)
+      run_privileged dnf install -y epel-release
+      run_privileged dnf makecache
       run_privileged dnf install -y "${packages[@]}"
       ;;
     *)
