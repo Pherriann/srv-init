@@ -27,7 +27,10 @@ Main-init details:
                   install OhMyBash, Shai, Tailscale
                   Generate ssh key for Git and give info to configure access to your repo
 
-02-pod.sh       : install various pod
+02-pod.sh       : optional Podman app menu. Lets you install predefined compose apps:
+                  - bentopdf, exposed at http://localhost:3250/
+                  - n8n, exposed at http://localhost:5678/
+                  Use PODMAN_APPS=bentopdf,n8n or ./02-pod.sh --install bentopdf,n8n for non-interactive installs.
 ```
 
 ## Supported distribution matrix

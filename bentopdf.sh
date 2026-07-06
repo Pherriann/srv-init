@@ -1,1 +1,5 @@
-podman compose --file bentopdf.yaml up -d 
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+"$script_dir/02-pod.sh" --install bentopdf "$@"

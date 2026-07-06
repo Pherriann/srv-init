@@ -16,6 +16,7 @@ echo "Starting server init at $start_t"
 echo "OS type: $os_type"
 
 OS_TYPE="$os_type" "$script_dir/01-packages.sh"
+"$script_dir/02-pod.sh"
 
 date_output=$(date +%H:%M:%S)
 echo "End of server init at $date_output ..."
